@@ -1,7 +1,6 @@
 package com.birthdaybliss.app;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -42,7 +41,7 @@ public class MainActivity extends Activity {
                 try {
                     intent = params.createIntent();
                     startActivityForResult(intent, FILE_CHOOSER_REQUEST);
-                } catch (ActivityNotFoundException | RuntimeException ex) {
+                } catch (RuntimeException ex) {
                     fileCallback = null;
                     return false;
                 }
