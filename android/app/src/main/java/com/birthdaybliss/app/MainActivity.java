@@ -2,6 +2,8 @@ package com.birthdaybliss.app;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.ClipData;
 import android.content.pm.PackageManager;
 import android.webkit.JavascriptInterface;
@@ -18,6 +20,18 @@ public class MainActivity extends Activity {
     private WebView web;
     private ValueCallback<Uri[]> fileCallback;
     private static final int FILE_CHOOSER_REQUEST = 4107;
+
+    public class BirthdayBridge {
+        @JavascriptInterface public void shareText(String text, String title) {
+            runOnUiThread(() -> {
+                Intent send = new Intent(Intent.ACTION_SEND);
+                send.setType("text/plain");
+                send.putExtra(Intent.EXTRA_TEXT, text);
+                try { startActivity(Intent.createChooser(send, title == null ? "Send birthday wish" : title)); }
+                catch (ActivityNotFoundException ex) { android.widget.Toast.makeText(MainActivity.this, "No sharing apps found", android.widget.Toast.LENGTH_SHORT).show(); }
+            });
+        }
+    }
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
