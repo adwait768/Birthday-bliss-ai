@@ -2,6 +2,9 @@ package com.birthdaybliss.app;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.ClipData;
+import android.content.pm.PackageManager;
+import android.webkit.JavascriptInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.ValueCallback;
@@ -28,6 +31,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
+        web.addJavascriptInterface(new BirthdayBridge(), "BirthdayNative");
         web.setWebViewClient(new WebViewClient());
         web.setWebChromeClient(new WebChromeClient() {
             @Override
