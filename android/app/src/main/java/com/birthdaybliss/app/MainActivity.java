@@ -15,6 +15,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.graphics.Color;
+import android.util.Base64;
+import android.content.ContentValues;
+import android.provider.MediaStore;
+import java.io.OutputStream;
 
 public class MainActivity extends Activity {
     private WebView web;
@@ -29,6 +33,31 @@ public class MainActivity extends Activity {
                 send.putExtra(Intent.EXTRA_TEXT, text);
                 try { startActivity(Intent.createChooser(send, title == null ? "Send birthday wish" : title)); }
                 catch (ActivityNotFoundException ex) { android.widget.Toast.makeText(MainActivity.this, "No sharing apps found", android.widget.Toast.LENGTH_SHORT).show(); }
+            });
+        }
+        @JavascriptInterface public void sharePoster(String base64Png, String text, String title) {
+            runOnUiThread(() -> {
+                Uri imageUri = null;
+                try {
+                    byte[] bytes = Base64.decode(base64Png, Base64.DEFAULT);
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.Images.Media.DISPLAY_NAME, "birthday-bliss-wish.png");
+                    values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+                    values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/BirthdayBliss");
+                    imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                    if (imageUri == null) throw new Exception("Could not create poster image");
+                    try (OutputStream out = getContentResolver().openOutputStream(imageUri)) { out.write(bytes); }
+                    Intent send = new Intent(Intent.ACTION_SEND);
+                    send.setType("image/png");
+                    send.putExtra(Intent.EXTRA_STREAM, imageUri);
+                    send.putExtra(Intent.EXTRA_TEXT, text);
+                    send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    send.setClipData(ClipData.newUri(getContentResolver(), "Birthday poster", imageUri));
+                    startActivity(Intent.createChooser(send, title == null ? "Share birthday poster and wish" : title));
+                } catch (Exception ex) {
+                    if (imageUri != null) getContentResolver().delete(imageUri, null, null);
+                    android.widget.Toast.makeText(MainActivity.this, "Could not share poster: " + ex.getMessage(), android.widget.Toast.LENGTH_LONG).show();
+                }
             });
         }
     }
